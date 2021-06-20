@@ -49,10 +49,14 @@ function draw() {
   //write code to display text lastFed time here
   fill("white");
   textSize(20);
-  text("Last Fed At " + lastFed + ampm,400,30);
-
+  if(lastFed>=12){
+    text("Last Fed At " + lastFed%12 + "PM",400,30);
+  }else if(lastFed===0){
+    text("Last Fed At 12AM" ,400,30);
+  }else{
+    text("Last Fed At " + lastFed + "AM",400,30);
+  }
   
- 
   drawSprites();
 }
 
@@ -63,31 +67,21 @@ function readStock(data){
 }
 
 
-async function feedDog(){
+ function feedDog(){
   dog.addImage(happyDog);
 
   //write code here to update food stock and last fed time
-  foodS = foodS-1
+  var food = foodObj.getFoodStock();
+  if(food <=0){
+    foodObj.updateFoodStock(food*0);
+  }else{
+    foodObj.updateFoodStock(food-1);
+  }
   database.ref('/').update({
-    Food:foodS
+    Food:foodObj.getFoodStock(),
+    FeedTime:hour()
   })
   
-   j = await fetch("http://worldtimeapi.org/api/timezone/America/Chicago");
-   obj = await j.json();
-   time = obj.datetime.slice(11,13);
-
-   if(time > 12){
-    time = time-12;
-    ampm = "PM"
-  } else if(time < 12){
-    time = time;
-    ampm = "AM"
-  }
-
-
-  database.ref('/').update({
-    FeedTime:time
-  })
 
 }
 
@@ -97,8 +91,4 @@ function addFoods(){
   database.ref('/').update({
     Food:foodS
   })
-}
-
-async function gettime(){
-  
 }
